@@ -1,11 +1,16 @@
 const cloudinary = require("../middleware/cloudinary");
 const Post = require("../models/Post");
+const User = require("../models/User");
 
 module.exports = {
   getProfile: async (req, res) => {
     try {
+  //created own variable to display username and email on client side
+      const user = await User.findOne({_id: req.user})
+      
       const posts = await Post.find({ user: req.user.id });
-      res.render("profile.ejs", { posts: posts, user: req.user });
+      // res.render("profile.ejs", { posts: posts, user: req.user });
+      res.render("profile.ejs", { posts: posts, user});
     } catch (err) {
       console.log(err);
     }
@@ -22,6 +27,7 @@ module.exports = {
     try {
       const post = await Post.findById(req.params.id);
       res.render("post.ejs", { post: post, user: req.user });
+      console.log('GET POST',req.user);
     } catch (err) {
       console.log(err);
     }
@@ -37,8 +43,9 @@ module.exports = {
         cloudinaryId: result.public_id,
         caption: req.body.caption,
         likes: 0,
-        user: req.user.id,
+        user: req.user,
       });
+      console.log("HELLO???", req.user, req.user._id);
       console.log("Post has been added!");
       res.redirect("/profile");
     } catch (err) {
@@ -63,10 +70,16 @@ module.exports = {
     try {
       // Find post by id
       let post = await Post.findById({ _id: req.params.id });
+
+
       // Delete image from cloudinary
-      await cloudinary.uploader.destroy(post.cloudinaryId);
+      // added {invalidate:true}
+      await cloudinary.uploader.destroy(post.cloudinaryId, {invalidate:true}
+      );
+
       // Delete post from db
-      await Post.remove({ _id: req.params.id });
+      // remove is deprecated so changed to findOneAndDelete
+      await Post.findOneAndDelete({ _id: req.params.id });
       console.log("Deleted Post");
       res.redirect("/profile");
     } catch (err) {

@@ -12,8 +12,9 @@
         >
           <button class="btn btn-primary fa fa-heart" type="submit"></button>
         </form>
+        <%console.log('WILL THIS WORK', user);%>
         <h3 class="col-3">Likes: <%= post.likes %></h3>
-        <%if(post.user == user.id){ %>
+        <%if(post.user == user){ %>
         <form
           action="/post/deletePost/<%= post.id %>?_method=DELETE"
           method="POST"
